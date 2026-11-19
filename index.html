@@ -92,7 +92,11 @@ header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .theme{background:none;border:1px solid var(--tile-edge);color:var(--ink);border-radius:999px;padding:5px 10px;font:500 .8rem var(--body);cursor:pointer}
 .hdr-btns{display:flex;gap:8px;flex-wrap:wrap}
-.hardbtn[aria-pressed="true"]{background:var(--pen);border-color:var(--pen);color:var(--paper);font-weight:600}
+.modes{display:inline-flex;border:1px solid var(--tile-edge);border-radius:999px;overflow:hidden;background:var(--tile)}
+.modes button{background:none;border:0;color:var(--ink);font:500 .8rem var(--body);padding:6px 12px;cursor:pointer}
+.modes button[aria-pressed="true"]{background:var(--ink);color:var(--paper);font-weight:600}
+.modes button[data-mode="hard"][aria-pressed="true"]{background:var(--pen)}
+.modes button:focus-visible{outline:3px solid var(--pen);outline-offset:-3px}
 .clock{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--pen);font-weight:500;margin-left:10px}
 .locked{text-align:center;color:var(--muted);background:var(--tile);border:1px dashed var(--tile-edge);border-radius:10px;padding:18px;margin:0}
 @media (max-width:440px){.tile{min-height:68px}.tile.l{font-size:1.15rem}.tile.m{font-size:.95rem}.tile.s{font-size:.8rem}.tile.xs{font-size:.7rem}.band span{font-size:.92rem}.band b{font-size:.82rem}}
@@ -108,7 +112,7 @@ header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
       <div class="tag">Group sixteen tiles into four sets of four</div>
     </div>
     <div class="hdr-btns">
-      <button class="theme hardbtn" id="hardBtn" type="button" aria-pressed="false">Hard mode: off</button>
+      <div class="modes" role="group" aria-label="Difficulty"><button type="button" data-mode="easy">Easy</button><button type="button" data-mode="normal">Normal</button><button type="button" data-mode="hard">Hard</button></div>
       <button class="theme" id="themeBtn" type="button">Light / dark</button>
     </div>
   </header>
@@ -148,7 +152,92 @@ header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
 
 <script>
 // groups listed easiest (Level 1) to hardest (Level 4)
-const PUZZLES = [
+const EASY = [
+ {title:"Roots & Shapes", topic:"Geometry + Algebra", groups:[
+  {name:"Quadrilaterals", items:["Rhombus","Kite","Trapezoid","Parallelogram"], hint:"Each one has exactly four sides."},
+  {name:"3-D solids", items:["Prism","Pyramid","Cone","Cylinder"], hint:"You could pick these up and hold them."},
+  {name:"Equal to 1", items:["7⁰","0!","log₁₀ 10","sin 90°"], hint:"Evaluate every expression."},
+  {name:"___ root", items:["Square","Cube","Principal","Nth"], hint:"Each word can come right before the name of the √ symbol."}]},
+ {title:"Factor Hunt", topic:"Algebra", groups:[
+  {name:"Degree 1", items:["3x − 7","½x","5 − x","πx + 2"], hint:"The highest power of x is 1."},
+  {name:"Difference of squares", items:["x² − 4","9 − y²","4a² − 25","x⁴ − 1"], hint:"a² − b² = (a + b)(a − b)."},
+  {name:"All the same polynomial", items:["(x + 3)²","(x+3)(x+3)","x² + 6x + 9","(−x − 3)²"], hint:"Expand each one and compare."},
+  {name:"Won't factor over the reals", items:["x² + 1","x² + 4","x² + x + 1","2x² + 3"], hint:"Check the discriminant b² − 4ac."}]},
+ {title:"Angle Measures", topic:"Geometry + Trig", groups:[
+  {name:"Right angle (90°)", items:["90°","π/2 rad","¼ turn","100 grad"], hint:"The corner of a square."},
+  {name:"Straight angle (180°)", items:["180°","π rad","½ turn","200 grad"], hint:"A flat line."},
+  {name:"Exactly 60°", items:["60°","π/3 rad","⅙ turn","arccos ½"], hint:"One angle of an equilateral triangle."},
+  {name:"Equal to ½", items:["sin 30°","cos 60°","sin(π/6)","cos(π/3)"], hint:"These are numbers, not angles."}]},
+ {title:"Formula Sheet", topic:"Geometry", groups:[
+  {name:"Slope", items:["m","rise/run","Δy/Δx","(y₂−y₁)/(x₂−x₁)"], hint:"How steep a line is."},
+  {name:"Area", items:["πr²","½bh","lw","s²"], hint:"Measured in square units."},
+  {name:"Perimeter / circumference", items:["2πr","πd","4s","2l + 2w"], hint:"The distance around a shape."},
+  {name:"Volume", items:["⁴⁄₃πr³","s³","⅓πr²h","lwh"], hint:"Measured in cubic units."}]},
+ {title:"Vocabulary Test", topic:"Geometry + Wordplay", groups:[
+  {name:"Conic sections", items:["Circle","Ellipse","Parabola","Hyperbola"], hint:"Slice a cone at different angles."},
+  {name:"Kinds of symmetry", items:["Line","Rotational","Point","Translational"], hint:"Ways a figure can map onto itself."},
+  {name:"___ mean", items:["Arithmetic","Geometric","Harmonic","Golden"], hint:"Add one word that means average."},
+  {name:"Hidden geometry words", items:["Scone","Stray","Parcel","Angler"], hint:"Look inside each word: cone, ray, arc, angle."}]},
+ {title:"Number Sense", topic:"Number theory", groups:[
+  {name:"Primes", items:["2","41","89","97"], hint:"Only divisible by 1 and themselves."},
+  {name:"Perfect squares", items:["36","64","100","144"], hint:"n × n. One of these is also a cube."},
+  {name:"Perfect cubes", items:["8","27","125","1000"], hint:"n × n × n."},
+  {name:"Triangular numbers", items:["10","21","28","55"], hint:"1 + 2 + 3 + … + n. 36 is one too, but it's needed elsewhere."}]},
+ {title:"Graph It", topic:"Coordinate geometry", groups:[
+  {name:"Lines", items:["y = 3x","y = −x + 4","x = 5","y = 7"], hint:"No squared terms at all."},
+  {name:"Parabolas", items:["y = x²","y = −2x² + 1","x = y²","y = (x − 1)²"], hint:"Exactly one variable is squared."},
+  {name:"Circles", items:["x² + y² = 9","(x−1)² + y² = 4","x² + y² − 2y = 0","4x² + 4y² = 1"], hint:"Both squared, same sign, same coefficient."},
+  {name:"Hyperbolas", items:["xy = 1","x² − y² = 1","y = 1/x","y² − x² = 4"], hint:"Opposite signs, or x times y."}]},
+ {title:"Initials Only", topic:"Geometry + Algebra", groups:[
+  {name:"Trig functions", items:["SIN","COS","TAN","CSC"], hint:"Buttons on a scientific calculator."},
+  {name:"Order of operations", items:["PEMDAS","BODMAS","BIDMAS","BEDMAS"], hint:"Mnemonics for what to do first."},
+  {name:"Triangle congruence tests", items:["SSS","SAS","ASA","AAS"], hint:"S = side, A = angle."},
+  {name:"Spelled with Roman numerals", items:["MIX","CIVIL","LIVID","MIMIC"], hint:"Every letter is I, V, X, L, C, D or M."}]}
+];
+
+const HARD = [
+ {title:"Unit Circle", topic:"Trigonometry", groups:[
+  {name:"Equal to √2⁄2", items:["sin 45°","cos 315°","sin 135°","cos(−45°)"], hint:"Quadrants I and II for sine, I and IV for cosine."},
+  {name:"Equal to √3⁄2", items:["sin 60°","cos 30°","sin 120°","cos(−30°)"], hint:"Cosine is even: cos(−θ) = cos θ."},
+  {name:"Equal to −½", items:["cos 120°","sin 210°","sin(−30°)","cos 240°"], hint:"Reference angle 30° for sine, 60° for cosine."},
+  {name:"Equal to −√3⁄2", items:["sin 240°","cos 150°","cos 210°","sin 300°"], hint:"Check the sign in each quadrant."}]},
+ {title:"Log Jam", topic:"Logarithms", groups:[
+  {name:"Equal to 3", items:["log₂ 8","log₅ 125","ln e³","log 1000"], hint:"Plain “log” means base 10."},
+  {name:"Equal to −2", items:["log₃ (1/9)","log 0.01","log₂ ¼","ln(1/e²)"], hint:"Fractions give negative logs."},
+  {name:"Equal to ½", items:["log₉ 3","log₄ 2","log₁₀₀ 10","ln √e"], hint:"A square root is a power of ½."},
+  {name:"Equal to 3⁄2", items:["log₄ 8","log₉ 27","log₁₀₀ 1000","log₂ √8"], hint:"Write both numbers as powers of the same base."}]},
+ {title:"Regular Polygons", topic:"Geometry", groups:[
+  {name:"Regular pentagon", items:["Int. ∠ 108°","Ext. ∠ 72°","∠ sum 540°","5 diagonals"], hint:"Exterior angles always add to 360°."},
+  {name:"Regular hexagon", items:["Int. ∠ 120°","Ext. ∠ 60°","∠ sum 720°","9 diagonals"], hint:"Angle sum = (n − 2) × 180°."},
+  {name:"Regular octagon", items:["Int. ∠ 135°","Ext. ∠ 45°","∠ sum 1080°","20 diagonals"], hint:"Diagonals = n(n − 3) ÷ 2."},
+  {name:"Regular decagon", items:["Int. ∠ 144°","Ext. ∠ 36°","∠ sum 1440°","35 diagonals"], hint:"Exterior angle = 360° ÷ n."}]},
+ {title:"Inequality Twins", topic:"Algebra", groups:[
+  {name:"Same as x > 2", items:["x − 2 > 0","−3x < −6","2x + 1 > 5","(x − 2)/5 > 0"], hint:"Dividing by a negative flips the sign."},
+  {name:"Same as x < 2", items:["−x > −2","3x − 1 < 5","4 − 2x > 0","x/2 < 1"], hint:"Solve each one for x."},
+  {name:"Same as −2 < x < 2", items:["|x| < 2","x² < 4","|2x| < 4","−4 < 2x < 4"], hint:"Squaring hides the sign of x."},
+  {name:"Same as x < −2 or x > 2", items:["|x| > 2","x² > 4","4 − x² < 0","|−x| > 2"], hint:"Two separate pieces of the number line."}]},
+ {title:"Even, Odd or Neither", topic:"Functions", groups:[
+  {name:"Even functions", items:["cos x","x⁴ − 3x²","|x| + 1","x sin x"], hint:"f(−x) = f(x). Odd times odd is even."},
+  {name:"Odd functions", items:["sin x","x³ − x","tan x","x cos x"], hint:"f(−x) = −f(x). Odd times even is odd."},
+  {name:"Neither", items:["eˣ","x² + x","ln x","√x"], hint:"Mixed powers, or a domain that isn't symmetric."},
+  {name:"Not a function of x", items:["x² + y² = 1","x = y²","x = 3","|y| = x"], hint:"Vertical line test."}]},
+ {title:"Circle Radius", topic:"Coordinate geometry", groups:[
+  {name:"Radius 1", items:["x²+y²=1","9x²+9y²=9","x²−2x+y²=0","(x+7)²+y²=1"], hint:"Divide out the coefficient first."},
+  {name:"Radius 2", items:["x²+y²=4","4x²+4y²=16","x²+y²−4y=0","(x−3)²+(y−3)²=4"], hint:"r² is on the right once it's in standard form."},
+  {name:"Radius 3", items:["x²+y²=9","(x−1)²+(y+2)²=9","x²+y²−6x=0","2x²+2y²=18"], hint:"Complete the square."},
+  {name:"Radius 5", items:["x²+y²=25","x²+y²+6x+8y=0","(x+5)²+y²=25","x²+(y−1)²=25"], hint:"A 3-4-5 triangle shows up."}]},
+ {title:"Pattern Spotting", topic:"Sequences", groups:[
+  {name:"Arithmetic", items:["7, 4, 1, −2","½, 1, 3⁄2, 2","−5, −1, 3, 7","0.3, 0.6, 0.9, 1.2"], hint:"Same difference every step."},
+  {name:"Geometric", items:["2, 6, 18, 54","16, −8, 4, −2","5, 0.5, 0.05, 0.005","3, 3√2, 6, 6√2"], hint:"Same ratio every step."},
+  {name:"Each term = sum of previous two", items:["2, 1, 3, 4","3, 3, 6, 9","1, 3, 4, 7","0, 2, 2, 4"], hint:"Like Fibonacci, with different starts."},
+  {name:"Quadratic (an² + bn + c)", items:["1, 4, 9, 16","2, 5, 10, 17","0, 2, 6, 12","1, 3, 6, 10"], hint:"The differences grow by the same amount each time."}]},
+ {title:"Radical Rumble", topic:"Algebra", groups:[
+  {name:"Equal to √6", items:["√2 · √3","√24 ÷ 2","6/√6","2√(3/2)"], hint:"Rationalize denominators."},
+  {name:"Equal to 2√2", items:["√8","4/√2","√32 − √8","√2 + √2"], hint:"Pull out perfect-square factors."},
+  {name:"Equal to 2√3", items:["√12","6/√3","√27 − √3","√6 · √2"], hint:"√27 = 3√3."},
+  {name:"Equal to 3√2", items:["√18","6/√2","√2 · √9","√8 + √2"], hint:"√8 = 2√2."}]}
+];
+const NORMAL = [
  {title:"Value Hunt", topic:"Algebra + Trig", groups:[
   {name:"Equal to 0", items:["sin π","ln 1","tan 180°","0⁵"], hint:"Some of these look like their neighbors in another group. Evaluate carefully."},
   {name:"Equal to 1", items:["0!","i⁴","sec 0","log₄ 4"], hint:"Remember what 0! is defined as."},
@@ -190,18 +279,25 @@ const PUZZLES = [
   {name:"Equal to 24", items:["4!","P(4, 3)","C(24, 23)","2 · 3 · 4"], hint:"P(n, r) = n! ÷ (n − r)!."},
   {name:"Equal to 120", items:["5!","P(6, 3)","C(10, 3)","C(16, 2)"], hint:"The biggest numbers on the board."}]}
 ];
+const SETS={easy:EASY,normal:NORMAL,hard:HARD};
+const MODES={easy:"Easy",normal:"Normal",hard:"Hard"};
+let PUZZLES;
 
-const KEY="liketerms.v2";
+const KEY="liketerms.v3";
 let store={}; try{store=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){store={}}
+if(!["easy","normal","hard"].includes(store.mode))store.mode=store.hard?"hard":"normal";
+delete store.hard;
+PUZZLES=SETS[store.mode];
 let cur = Number.isInteger(store.cur)&&store.cur<PUZZLES.length ? store.cur : 0;
 store.states=store.states||{};
 let busy=false;
 const $=id=>document.getElementById(id);
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 function fresh(p){return {order:shuffle(PUZZLES[p].groups.flatMap(g=>g.items)),solved:[],mistakes:0,history:[],guessed:[],selected:[],over:null,hints:[],start:null,time:null}}
-const skey=()=>(store.hard?"h":"n")+cur;
+const skey=()=>store.mode+cur;
 function st(){const k=skey();return store.states[k]||(store.states[k]=fresh(cur))}
-const MAX=()=>store.hard?2:4;
+const MAX=()=>({easy:6,normal:4,hard:2})[store.mode];
+const HARDM=()=>store.mode==="hard";
 const fmt=ms=>{const t=Math.floor(ms/1000);return Math.floor(t/60)+":"+String(t%60).padStart(2,"0")};
 function finish(s,how){s.over=how;s.selected=[];if(s.start)s.time=Date.now()-s.start}
 function tick(){const c=$("clock");if(!c)return;const s=st();c.textContent=fmt(s.time??(s.start?Date.now()-s.start:0))}
@@ -216,7 +312,7 @@ function band(g){const G=PUZZLES[cur].groups[g];const d=document.createElement("
 function render(){
   const s=st(),P=PUZZLES[cur];
   $("ptitle").textContent=P.title;
-  $("psub").textContent=`Problem set ${cur+1} of ${PUZZLES.length} · ${P.topic}`;
+  $("psub").textContent=`${MODES[store.mode]} · set ${cur+1} of ${PUZZLES.length} · ${P.topic}`;
   $("prev").disabled=cur===0;$("next").disabled=cur===PUZZLES.length-1;
   const bands=$("bands");bands.innerHTML="";
   const shown=s.over==="lost"?[...s.solved,...[0,1,2,3].filter(g=>!s.solved.includes(g))]:s.solved;
@@ -226,9 +322,9 @@ function render(){
     const b=document.createElement("button");b.type="button";b.className="tile "+sizeClass(t);b.textContent=t;b.dataset.t=t;
     b.setAttribute("aria-pressed",s.selected.includes(t));b.onclick=()=>toggle(t);grid.appendChild(b)})}
   grid.hidden=!!s.over;$("controls").hidden=!!s.over;$("prompt").hidden=!!s.over;
-  $("prompt").textContent=store.hard?"Hard mode: 2 mistakes, no “one away” warnings, no hints, and the clock starts on your first tap.":"Find groups of four that share something.";
-  const hb=$("hardBtn");hb.setAttribute("aria-pressed",!!store.hard);hb.textContent="Hard mode: "+(store.hard?"on":"off");
-  const m=$("mistakes");m.innerHTML=s.over?"":"Mistakes remaining: "+Array.from({length:MAX()},(_,i)=>`<i class="dot${i<s.mistakes?" used":""}"></i>`).join("")+(store.hard?`<span class="clock" id="clock"></span>`:"");
+  $("prompt").textContent={easy:"Easy: 6 mistakes allowed, hints on.",normal:"Find four groups of four. 4 mistakes allowed.",hard:"Hard: 2 mistakes, no hints, and the clock starts on your first tap."}[store.mode];
+  document.querySelectorAll(".modes button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.mode===store.mode));
+  const m=$("mistakes");m.innerHTML=s.over?"":"Mistakes remaining: "+Array.from({length:MAX()},(_,i)=>`<i class="dot${i<s.mistakes?" used":""}"></i>`).join("")+(HARDM()?`<span class="clock" id="clock"></span>`:"");
   tick();
   $("submit").disabled=s.selected.length!==4;$("deselect").disabled=!s.selected.length;
   const r=$("result");r.hidden=!s.over;
@@ -236,10 +332,10 @@ function render(){
     const emo=["🟩","🟨","🟧","🟦"];
     const grid=s.history.map(row=>row.map(l=>emo[l]).join("")).join("\n");
     let head=s.over==="won"?(s.mistakes===0?"Perfect solve":`Solved with ${s.mistakes} mistake${s.mistakes>1?"s":""}`):"Out of mistakes";
-    if(store.hard)head+=` · Hard mode${s.time!=null?" · "+fmt(s.time):""}`;
+    head+=` · ${MODES[store.mode]}${HARDM()&&s.time!=null?" · "+fmt(s.time):""}`;
     r.innerHTML=`<h3></h3><pre class="share"></pre><div class="controls"><button class="btn" id="copy" type="button">Copy results</button><button class="btn" id="replay" type="button">Replay</button>${cur<PUZZLES.length-1?'<button class="btn primary" id="another" type="button">Next set</button>':""}</div>`;
     r.querySelector("h3").textContent=head;r.querySelector(".share").textContent=grid;
-    const text=`Like Terms · ${P.title}${store.hard?" · Hard mode"+(s.time!=null?" "+fmt(s.time):""):""}\n${grid}`;
+    const text=`Like Terms · ${P.title} · ${MODES[store.mode]}${HARDM()&&s.time!=null?" "+fmt(s.time):""}\n${grid}`;
     $("copy").onclick=()=>{navigator.clipboard.writeText(text).then(()=>toast("Copied"),()=>{const sel=getSelection(),rg=document.createRange();rg.selectNodeContents(r.querySelector(".share"));sel.removeAllRanges();sel.addRange(rg);toast("Press Ctrl+C to copy")})};
     $("replay").onclick=()=>{store.states[skey()]=fresh(cur);save();render()};
     if($("another"))$("another").onclick=()=>go(1);
@@ -248,7 +344,7 @@ function render(){
 }
 function renderHints(){
   const s=st(),v=$("hintView");v.innerHTML="";
-  if(store.hard&&!s.over){v.innerHTML=`<p class="locked">Hints are off in hard mode. Finish the set or turn hard mode off to see them.</p>`;return}
+  if(HARDM()&&!s.over){v.innerHTML=`<p class="locked">Hints are off in hard mode. Finish the set, or switch to Easy or Normal to use them.</p>`;return}
   PUZZLES[cur].groups.forEach((g,i)=>{
     const done=s.solved.includes(i)||s.over,open=s.hints.includes(i)||done;
     const d=document.createElement("div");d.className="hint";
@@ -275,7 +371,7 @@ function submit(){
     setTimeout(()=>{s.solved.push(lv[0]);s.selected=[];if(s.solved.length===4)finish(s,"won");busy=false;save();render();if(s.over)toast("Nicely done")},650);
   }else{
     const counts=[0,1,2,3].map(g=>lv.filter(l=>l===g).length);
-    if(!store.hard&&Math.max(...counts)===3)toast("One away…");
+    const best=Math.max(...counts);toast(best===3?"One away…":best===2?"Two away":"Not even close");
     tiles.forEach(b=>b.classList.add("shake"));
     s.mistakes++;
     setTimeout(()=>{tiles.forEach(b=>b.classList.remove("shake"));if(s.mistakes>=MAX()){finish(s,"lost");toast("Here are the answers")}busy=false;save();render()},450);
@@ -285,7 +381,7 @@ function go(d){cur=Math.max(0,Math.min(PUZZLES.length-1,cur+d));save();render()}
 $("shuffle").onclick=()=>{const s=st();s.order=shuffle(s.order);save();render()};
 $("deselect").onclick=()=>{st().selected=[];save();render()};
 $("submit").onclick=submit;
-$("hardBtn").onclick=()=>{if(busy)return;store.hard=!store.hard;save();render();toast(store.hard?"Hard mode on":"Hard mode off")};
+document.querySelectorAll(".modes button").forEach(b=>b.onclick=()=>{if(busy||store.mode===b.dataset.mode)return;store.mode=b.dataset.mode;PUZZLES=SETS[store.mode];cur=Math.min(cur,PUZZLES.length-1);save();render();toast(MODES[store.mode]+" mode")});
 $("prev").onclick=()=>go(-1);$("next").onclick=()=>go(1);
 function tab(h){$("tabGame").setAttribute("aria-selected",!h);$("tabHints").setAttribute("aria-selected",h);$("gameView").hidden=h;$("hintView").hidden=!h}
 $("tabGame").onclick=()=>tab(false);$("tabHints").onclick=()=>tab(true);
