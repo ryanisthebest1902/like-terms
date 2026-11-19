@@ -530,9 +530,7 @@ $("logoutBtn").onclick=async()=>{await sb.auth.signOut();closeAuth();toast("Logg
 if(sb){sb.auth.onAuthStateChange((ev,session)=>{const was=user&&user.id;user=session?session.user:null;setAcctBtn();
   if(ev==="PASSWORD_RECOVERY"){recovering=true;setTimeout(()=>openAuth("newpass",true),0)}
   if(user){markAcct();if(recovering&&authMode!=="code")setTimeout(()=>openAuth("newpass",true),0);else if(locked&&!recovering){locked=false;closeAuth()}if(user.id!==was)setTimeout(pullRemote,0)}
-  else if(ev==="INITIAL_SESSION"||ev==="SIGNED_OUT")setTimeout(()=>{
-    if(badLink){openAuth("forgot",true);$("authErr").textContent="That reset link has expired or was already used. Send yourself a new code.";history.replaceState(null,"",location.pathname+location.search)}
-    else openAuth(seenAcct()?"login":"signup",true)},0)})}
+  else if(ev==="INITIAL_SESSION"&&badLink)setTimeout(()=>{openAuth("forgot");$("authErr").textContent="That reset link has expired or was already used. Send yourself a new code.";history.replaceState(null,"",location.pathname+location.search)},0)})}
 setAcctBtn();
 
 skipFinished();
