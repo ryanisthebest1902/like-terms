@@ -112,6 +112,7 @@ body.locked .wrap{filter:blur(6px);pointer-events:none;user-select:none}
 .sheet input:focus-visible{outline:3px solid var(--pen);outline-offset:1px}
 .small{font-size:.85rem;color:var(--muted);margin:0}
 .err{color:var(--pen);font-size:.85rem;margin:0;min-height:1em}
+.small .link{font-size:inherit}
 .link{background:none;border:0;padding:0;color:var(--ink);font:inherit;font-weight:600;text-decoration:underline;cursor:pointer}
 .x{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;border:0;background:transparent;color:var(--muted);font-size:1.4rem;cursor:pointer}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0}
@@ -177,8 +178,9 @@ body.locked .wrap{filter:blur(6px);pointer-events:none;user-select:none}
       <form id="authForm" novalidate>
         <p class="small" id="authNote">Log in to save your progress and pick it up on any device.</p>
         <label id="nameRow" hidden>Name (shown on your account)<input id="authName" autocomplete="nickname" maxlength="30"></label>
-        <label>Email<input id="authEmail" type="email" autocomplete="email" required></label>
-        <label>Password<input id="authPass" type="password" autocomplete="current-password" minlength="6" required></label>
+        <label id="emailRow">Email<input id="authEmail" type="email" autocomplete="email" required></label>
+        <label id="codeRow" hidden>Code from the email<input id="authCode" inputmode="numeric" autocomplete="one-time-code" maxlength="12"></label>
+        <label id="passRow"><span id="passLabel">Password</span><input id="authPass" type="password" autocomplete="current-password" minlength="6" required></label>
         <p class="err" id="authErr" role="alert"></p>
         <button class="btn primary" id="authGo" type="submit">Log in</button>
         <p class="small" id="authSwitch"></p>
@@ -433,7 +435,9 @@ $("themeBtn").onclick=()=>{const r=document.documentElement;const dark=r.dataset
 // ---------- accounts (Supabase, Battleship project; table lt_progress) ----------
 const SB_URL="https://knlopoqxxbuzfntbfibd.supabase.co",SB_KEY="sb_publishable_midfitAX8ULaJ2afBTCbqQ_JwX9RVCT";
 let sb=null;try{if(window.supabase)sb=window.supabase.createClient(SB_URL,SB_KEY)}catch(e){sb=null}
-let user=null,syncT=null,authMode="login",locked=false;
+let user=null,syncT=null,authMode="login",locked=false,resetEmail="",recovering=/type=recovery/.test(location.hash);
+const badLink=/error_code=otp_expired|error=access_denied/.test(location.hash);
+const SITE=location.origin+location.pathname;
 const seenAcct=()=>{try{return localStorage.getItem("liketerms.hasAccount")==="1"}catch(e){return false}};
 const markAcct=()=>{try{localStorage.setItem("liketerms.hasAccount","1")}catch(e){}};
 function queueSync(){if(!user||!sb)return;clearTimeout(syncT);syncT=setTimeout(pushRemote,700)}
@@ -450,14 +454,32 @@ async function pullRemote(){if(!user)return;
   render();pushRemote()}
 const nameOf=u=>(u.user_metadata&&u.user_metadata.name)||u.email.split("@")[0];
 function setAcctBtn(){const b=$("acctBtn");b.hidden=!sb;b.textContent=user?nameOf(user):"Log in";b.title=user?"Your account":"Log in or sign up"}
-function setAuthMode(m){authMode=m;const signup=m==="signup",acct=m==="account";
+const GO={login:"Log in",signup:"Create account",forgot:"Send reset code",code:"Set new password",newpass:"Save new password"};
+function setAuthMode(m){authMode=m;const signup=m==="signup",acct=m==="account",forgot=m==="forgot",code=m==="code",np=m==="newpass";
   $("authView").hidden=acct;$("acctView").hidden=!acct;
-  $("authTitle").textContent=acct?"Your account":signup?"Create an account":"Log in";
-  $("nameRow").hidden=!signup;$("authGo").textContent=signup?"Create account":"Log in";
-  $("authPass").autocomplete=signup?"new-password":"current-password";
-  $("authNote").textContent=locked?(signup?"Create a free account to play. Your progress saves so you can play on any device.":"Log in to play. Your progress is saved to your account."):signup?"Free. Your progress saves to your account so you can play on any device.":"Log in to save your progress and pick it up on any device.";
-  $("authSwitch").innerHTML=signup?'Already have an account? <button type="button" class="link" id="swap">Log in</button>':'New here? <button type="button" class="link" id="swap">Create an account</button>';
-  if(!acct)$("swap").onclick=()=>setAuthMode(signup?"login":"signup");
+  $("authTitle").textContent=acct?"Your account":signup?"Create an account":forgot?"Reset your password":code?"Check your email":np?"Choose a new password":"Log in";
+  $("nameRow").hidden=!signup;$("emailRow").hidden=code||np;$("passRow").hidden=forgot;$("codeRow").hidden=!code;
+  $("passLabel").textContent=(code||np)?"New password":"Password";
+  $("authPass").autocomplete=(signup||code||np)?"new-password":"current-password";
+  if(!acct)$("authGo").textContent=GO[m];
+  $("authNote").textContent=
+    forgot?"Type your account's email and we'll send you a code to reset your password.":
+    code?"We sent a code to "+resetEmail+". Type it here with your new password.":
+    np?"Type a new password for your account.":
+    locked?(signup?"Create a free account to play. Your progress saves so you can play on any device.":"Log in to play. Your progress is saved to your account."):
+    signup?"Free. Your progress saves to your account so you can play on any device.":"Log in to save your progress and pick it up on any device.";
+  const L=(id,t)=>'<button type="button" class="link" id="'+id+'">'+t+'</button>';
+  $("authSwitch").innerHTML=
+    m==="login"?'New here? '+L("swap","Create an account")+'<br>'+L("toForgot","Forgot password?"):
+    signup?'Already have an account? '+L("swap","Log in"):
+    forgot?L("toLogin","Back to log in"):
+    code?'No email? Check your spam folder, or '+L("resend","send a new code")+'.<br>'+L("toLogin","Back to log in"):"";
+  const on=(id,f)=>{const b=$(id);if(b)b.onclick=f};
+  on("swap",()=>setAuthMode(signup?"login":"signup"));
+  on("toForgot",()=>{setAuthMode("forgot");$("authEmail").focus()});
+  on("toLogin",()=>setAuthMode("login"));
+  on("resend",async()=>{const b=$("resend");b.disabled=true;const r=await sb.auth.resetPasswordForEmail(resetEmail,{redirectTo:SITE});b.disabled=false;
+    $("authErr").textContent=r.error?"Couldn't send it yet. Wait a minute and try again.":"A new code is on its way. Use the newest email."});
   $("authErr").textContent="";
   if(acct){$("acctWho").textContent="Logged in as "+nameOf(user)+" ("+user.email+")";
     $("acctStats").innerHTML=["easy","normal","hard"].map(m=>{const n=SETS[m].filter((_,i)=>store.states[m+i]&&store.states[m+i].over==="won").length;return '<div><dt>'+MODES[m]+'</dt><dd>'+n+' / '+SETS[m].length+'</dd></div>'}).join("")}}
@@ -467,26 +489,48 @@ $("acctBtn").onclick=()=>openAuth(user?"account":"login");
 $("authClose").onclick=closeAuth;
 $("authModal").addEventListener("click",e=>{if(e.target===$("authModal"))closeAuth()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("authModal").hidden)closeAuth()});
+function authDone(msg){$("authPass").value="";$("authCode").value="";recovering=false;markAcct();locked=false;closeAuth();toast(msg)}
 $("authForm").addEventListener("submit",async e=>{e.preventDefault();if(!sb)return;
-  const email=$("authEmail").value.trim(),password=$("authPass").value,name=$("authName").value.trim(),err=$("authErr"),go=$("authGo");
+  const m=authMode,email=$("authEmail").value.trim(),password=$("authPass").value,name=$("authName").value.trim(),err=$("authErr"),go=$("authGo");
   err.textContent="";
-  if(!/^\S+@\S+\.\S+$/.test(email)){err.textContent="Enter a valid email address.";return}
-  if(password.length<6){err.textContent="Passwords need at least 6 characters.";return}
-  if(authMode==="signup"&&!name){err.textContent="Add a name for your account.";return}
-  go.disabled=true;go.textContent=authMode==="signup"?"Creating…":"Logging in…";
+  if((m==="login"||m==="signup"||m==="forgot")&&!/^\S+@\S+\.\S+$/.test(email)){err.textContent="Enter a valid email address.";return}
+  const token=$("authCode").value.replace(/\D/g,"");
+  if(m==="code"&&token.length<6){err.textContent="Type the code from the email (6 or more numbers).";return}
+  if(m!=="forgot"&&password.length<6){err.textContent="Passwords need at least 6 characters.";return}
+  if(m==="signup"&&!name){err.textContent="Add a name for your account.";return}
+  go.disabled=true;go.textContent="One moment…";
   try{
-    const r=authMode==="signup"
+    if(m==="forgot"){
+      const r=await sb.auth.resetPasswordForEmail(email,{redirectTo:SITE});
+      if(r.error){err.textContent=/rate|seconds|security/i.test(r.error.message)?"Please wait a minute before asking for another code.":r.error.message;return}
+      resetEmail=email;$("authCode").value="";$("authPass").value="";setAuthMode("code");setTimeout(()=>$("authCode").focus(),30);return}
+    if(m==="code"){
+      recovering=true;
+      const v=await sb.auth.verifyOtp({email:resetEmail,token,type:"recovery"});
+      if(v.error){recovering=false;err.textContent="That code is wrong or has expired. Check it, or send a new code.";return}
+      const u=await sb.auth.updateUser({password});
+      if(u.error){setAuthMode("newpass");$("authErr").textContent=u.error.message;return}
+      authDone("Password changed. You're logged in.");return}
+    if(m==="newpass"){
+      const u=await sb.auth.updateUser({password});
+      if(u.error){err.textContent=/different from the old/i.test(u.error.message)?"Pick a password you haven't used here before.":u.error.message;return}
+      history.replaceState(null,"",location.pathname+location.search);
+      authDone("Password changed. You're logged in.");return}
+    const r=m==="signup"
       ?await sb.auth.signUp({email,password,options:{data:{name,from:"like-terms"}}})
       :await sb.auth.signInWithPassword({email,password});
     if(r.error){err.textContent=/invalid login/i.test(r.error.message)?"That email and password don't match an account.":/already registered/i.test(r.error.message)?"That email already has an account. Log in instead.":r.error.message;return}
-    if(authMode==="signup"&&!r.data.session){err.textContent="Check your email to confirm your account, then log in.";return}
-    $("authPass").value="";markAcct();locked=false;closeAuth();toast(authMode==="signup"?"Account created":"Logged in");
+    if(m==="signup"&&!r.data.session){err.textContent="Check your email to confirm your account, then log in.";return}
+    authDone(m==="signup"?"Account created":"Logged in");
   }catch(x){err.textContent="Couldn't reach the login server. Check your connection and try again."}
-  finally{go.disabled=false;go.textContent=authMode==="signup"?"Create account":"Log in"}});
+  finally{go.disabled=false;if(authMode!=="account")go.textContent=GO[authMode]}});
 $("logoutBtn").onclick=async()=>{await sb.auth.signOut();closeAuth();toast("Logged out")};
 if(sb){sb.auth.onAuthStateChange((ev,session)=>{const was=user&&user.id;user=session?session.user:null;setAcctBtn();
-  if(user){markAcct();if(locked){locked=false;closeAuth()}if(user.id!==was)setTimeout(pullRemote,0)}
-  else if(ev==="INITIAL_SESSION"||ev==="SIGNED_OUT")setTimeout(()=>openAuth(seenAcct()?"login":"signup",true),0)})}
+  if(ev==="PASSWORD_RECOVERY"){recovering=true;setTimeout(()=>openAuth("newpass",true),0)}
+  if(user){markAcct();if(recovering&&authMode!=="code")setTimeout(()=>openAuth("newpass",true),0);else if(locked&&!recovering){locked=false;closeAuth()}if(user.id!==was)setTimeout(pullRemote,0)}
+  else if(ev==="INITIAL_SESSION"||ev==="SIGNED_OUT")setTimeout(()=>{
+    if(badLink){openAuth("forgot",true);$("authErr").textContent="That reset link has expired or was already used. Send yourself a new code.";history.replaceState(null,"",location.pathname+location.search)}
+    else openAuth(seenAcct()?"login":"signup",true)},0)})}
 setAcctBtn();
 
 render();
