@@ -206,26 +206,26 @@ const HARD = [
   {name:"Negative", items:["log 0.5","ln(1/e)","log₃ (1/9)","log₅ 0.2"], hint:"Inputs between 0 and 1."},
   {name:"Between 0 and 1", items:["log 5","ln 2","log₉ 3","log₈ 2"], hint:"Input bigger than 1 but smaller than the base."},
   {name:"Whole number above 1", items:["log₂ 32","ln e⁴","log 10⁶","log₃ 81"], hint:"Input is an exact power of the base."}]},
- {title:"Regular Polygons", topic:"Geometry", groups:[
-  {name:"Regular pentagon", items:["Int. ∠ 108°","Ext. ∠ 72°","∠ sum 540°","5 diagonals"], hint:"Exterior angles always add to 360°."},
-  {name:"Regular hexagon", items:["Int. ∠ 120°","Ext. ∠ 60°","∠ sum 720°","9 diagonals"], hint:"Angle sum = (n − 2) × 180°."},
-  {name:"Regular octagon", items:["Int. ∠ 135°","Ext. ∠ 45°","∠ sum 1080°","20 diagonals"], hint:"Diagonals = n(n − 3) ÷ 2."},
-  {name:"Regular decagon", items:["Int. ∠ 144°","Ext. ∠ 36°","∠ sum 1440°","35 diagonals"], hint:"Exterior angle = 360° ÷ n."}]},
- {title:"Inequality Twins", topic:"Algebra", groups:[
-  {name:"Same as x > 2", items:["x − 2 > 0","−3x < −6","2x + 1 > 5","(x − 2)/5 > 0"], hint:"Dividing by a negative flips the sign."},
-  {name:"Same as x < 2", items:["−x > −2","3x − 1 < 5","4 − 2x > 0","x/2 < 1"], hint:"Solve each one for x."},
-  {name:"Same as −2 < x < 2", items:["|x| < 2","x² < 4","|2x| < 4","−4 < 2x < 4"], hint:"Squaring hides the sign of x."},
-  {name:"Same as x < −2 or x > 2", items:["|x| > 2","x² > 4","4 − x² < 0","|−x| > 2"], hint:"Two separate pieces of the number line."}]},
+ {title:"Solid Ground", topic:"3-D geometry", groups:[
+  {name:"Has a curved surface", items:["Sphere","Cylinder","Torus","Cone"], hint:"Can roll."},
+  {name:"Prisms", items:["Cube","Cuboid","Triangular prism","Hexagonal prism"], hint:"Same cross-section all the way through. Count how many fit."},
+  {name:"Pyramids (not Platonic)", items:["Square pyramid","Pentagonal pyramid","Hexagonal pyramid","Triangular pyramid"], hint:"One base, all other faces meet at a point."},
+  {name:"Platonic solids", items:["Tetrahedron","Octahedron","Dodecahedron","Icosahedron"], hint:"Every face is the same regular polygon. There are five, but one is needed elsewhere."}]},
+ {title:"Solution Sets", topic:"Algebra", groups:[
+  {name:"No solution", items:["x² < −1","|x| < 0","x + 1 < x","√x < −2"], hint:"Nothing on the number line works."},
+  {name:"Every real number works", items:["x² ≥ 0","|x| ≥ −3","x + 2 > x","(x−1)² + 1 > 0"], hint:"Always true, whatever x is."},
+  {name:"Exactly one solution", items:["x² ≤ 0","|x − 3| ≤ 0","(x+1)² ≤ 0","x ≤ 5 and x ≥ 5"], hint:"The “or equal to” part is the only way in."},
+  {name:"A bounded interval", items:["|x| < 2","x² < 9","−1 ≤ 2x+1 ≤ 5","|x − 1| ≤ 4"], hint:"A segment of the number line with two ends."}]},
  {title:"Even, Odd or Neither", topic:"Functions", groups:[
   {name:"Even functions", items:["cos x","x⁴ − 3x²","|x| + 1","x sin x"], hint:"f(−x) = f(x). Odd times odd is even."},
   {name:"Odd functions", items:["sin x","x³ − x","tan x","x cos x"], hint:"f(−x) = −f(x). Odd times even is odd."},
   {name:"Neither", items:["eˣ","x² + x","ln x","√x"], hint:"Mixed powers, or a domain that isn't symmetric."},
   {name:"Not a function of x", items:["x² + y² = 1","x = y²","x = 3","|y| = x"], hint:"Vertical line test."}]},
- {title:"Circle Radius", topic:"Coordinate geometry", groups:[
-  {name:"Radius 1", items:["x²+y²=1","9x²+9y²=9","x²−2x+y²=0","(x+7)²+y²=1"], hint:"Divide out the coefficient first."},
-  {name:"Radius 2", items:["x²+y²=4","4x²+4y²=16","x²+y²−4y=0","(x−3)²+(y−3)²=4"], hint:"r² is on the right once it's in standard form."},
-  {name:"Radius 3", items:["x²+y²=9","(x−1)²+(y+2)²=9","x²+y²−6x=0","2x²+2y²=18"], hint:"Complete the square."},
-  {name:"Radius 5", items:["x²+y²=25","x²+y²+6x+8y=0","(x+5)²+y²=25","x²+(y−1)²=25"], hint:"A 3-4-5 triangle shows up."}]},
+ {title:"Circle Clues", topic:"Coordinate geometry", groups:[
+  {name:"Centered at the origin", items:["x²+y²=7","2x²+2y²=8","y²=16−x²","x²+y²=0.25"], hint:"No x or y terms besides the squares, and a positive right side."},
+  {name:"Passes through the origin", items:["x²+y²−6x=0","(x−3)²+(y−4)²=25","x²+y²+2x−2y=0","(x+1)²+y²=1"], hint:"Plug in (0, 0)."},
+  {name:"Touches the x-axis at one point", items:["(x−2)²+(y−3)²=9","(x+6)²+(y+2)²=4","(x+4)²+(y−1)²=1","x²+y²−4x−4y+4=0"], hint:"The center's distance from the x-axis equals the radius."},
+  {name:"Not actually a circle", items:["x²+y²=−4","x²+y²=0","x²+2y²=4","x²−y²=9"], hint:"Check the right side and the coefficients."}]},
  {title:"Pattern Spotting", topic:"Sequences", groups:[
   {name:"Arithmetic", items:["7, 4, 1, −2","½, 1, 3⁄2, 2","−5, −1, 3, 7","0.3, 0.6, 0.9, 1.2"], hint:"Same difference every step."},
   {name:"Geometric", items:["2, 6, 18, 54","16, −8, 4, −2","5, 0.5, 0.05, 0.005","3, 3√2, 6, 6√2"], hint:"Same ratio every step."},
@@ -283,7 +283,7 @@ const SETS={easy:EASY,normal:NORMAL,hard:HARD};
 const MODES={easy:"Easy",normal:"Normal",hard:"Hard"};
 let PUZZLES;
 
-const KEY="liketerms.v4";
+const KEY="liketerms.v5";
 let store={}; try{store=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){store={}}
 if(!["easy","normal","hard"].includes(store.mode))store.mode=store.hard?"hard":"normal";
 delete store.hard;
