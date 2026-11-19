@@ -196,16 +196,16 @@ const EASY = [
 ];
 
 const HARD = [
- {title:"Unit Circle", topic:"Trigonometry", groups:[
-  {name:"Equal to √2⁄2", items:["sin 45°","cos 315°","sin 135°","cos(−45°)"], hint:"Quadrants I and II for sine, I and IV for cosine."},
-  {name:"Equal to √3⁄2", items:["sin 60°","cos 30°","sin 120°","cos(−30°)"], hint:"Cosine is even: cos(−θ) = cos θ."},
-  {name:"Equal to −½", items:["cos 120°","sin 210°","sin(−30°)","cos 240°"], hint:"Reference angle 30° for sine, 60° for cosine."},
-  {name:"Equal to −√3⁄2", items:["sin 240°","cos 150°","cos 210°","sin 300°"], hint:"Check the sign in each quadrant."}]},
+ {title:"Where's the Angle?", topic:"Trigonometry", groups:[
+  {name:"Lands in Quadrant II", items:["120°","3π/4","170°","−200°"], hint:"Add or subtract 360° until it's between 0° and 360°."},
+  {name:"Lands in Quadrant III", items:["210°","5π/4","−120°","4 rad"], hint:"1 radian is about 57.3°."},
+  {name:"Lands in Quadrant IV", items:["300°","−π/6","7π/4","5 rad"], hint:"Negative angles go clockwise."},
+  {name:"Coterminal with 60°", items:["420°","−300°","7π/3","780°"], hint:"Differ from 60° by a multiple of 360°."}]},
  {title:"Log Jam", topic:"Logarithms", groups:[
-  {name:"Equal to 3", items:["log₂ 8","log₅ 125","ln e³","log 1000"], hint:"Plain “log” means base 10."},
-  {name:"Equal to −2", items:["log₃ (1/9)","log 0.01","log₂ ¼","ln(1/e²)"], hint:"Fractions give negative logs."},
-  {name:"Equal to ½", items:["log₉ 3","log₄ 2","log₁₀₀ 10","ln √e"], hint:"A square root is a power of ½."},
-  {name:"Equal to 3⁄2", items:["log₄ 8","log₉ 27","log₁₀₀ 1000","log₂ √8"], hint:"Write both numbers as powers of the same base."}]},
+  {name:"Undefined", items:["log 0","log(−5)","log₁ 5","ln(−e)"], hint:"Check the input, and check the base."},
+  {name:"Negative", items:["log 0.5","ln(1/e)","log₃ (1/9)","log₅ 0.2"], hint:"Inputs between 0 and 1."},
+  {name:"Between 0 and 1", items:["log 5","ln 2","log₉ 3","log₈ 2"], hint:"Input bigger than 1 but smaller than the base."},
+  {name:"Whole number above 1", items:["log₂ 32","ln e⁴","log 10⁶","log₃ 81"], hint:"Input is an exact power of the base."}]},
  {title:"Regular Polygons", topic:"Geometry", groups:[
   {name:"Regular pentagon", items:["Int. ∠ 108°","Ext. ∠ 72°","∠ sum 540°","5 diagonals"], hint:"Exterior angles always add to 360°."},
   {name:"Regular hexagon", items:["Int. ∠ 120°","Ext. ∠ 60°","∠ sum 720°","9 diagonals"], hint:"Angle sum = (n − 2) × 180°."},
@@ -232,17 +232,17 @@ const HARD = [
   {name:"Each term = sum of previous two", items:["2, 1, 3, 4","3, 3, 6, 9","1, 3, 4, 7","0, 2, 2, 4"], hint:"Like Fibonacci, with different starts."},
   {name:"Quadratic (an² + bn + c)", items:["1, 4, 9, 16","2, 5, 10, 17","0, 2, 6, 12","1, 3, 6, 10"], hint:"The differences grow by the same amount each time."}]},
  {title:"Radical Rumble", topic:"Algebra", groups:[
-  {name:"Equal to √6", items:["√2 · √3","√24 ÷ 2","6/√6","2√(3/2)"], hint:"Rationalize denominators."},
-  {name:"Equal to 2√2", items:["√8","4/√2","√32 − √8","√2 + √2"], hint:"Pull out perfect-square factors."},
-  {name:"Equal to 2√3", items:["√12","6/√3","√27 − √3","√6 · √2"], hint:"√27 = 3√3."},
-  {name:"Equal to 3√2", items:["√18","6/√2","√2 · √9","√8 + √2"], hint:"√8 = 2√2."}]}
+  {name:"Rational after all", items:["√(9/4)","∛0.008","√0.16","∛(−8)"], hint:"Cube roots of negatives are fine."},
+  {name:"Multiples of √2", items:["√8","√50","4/√2","√0.5"], hint:"Pull out perfect-square factors."},
+  {name:"Multiples of √3", items:["√12","√75","6/√3","√27"], hint:"Rationalize the denominator."},
+  {name:"Not real numbers", items:["√(−9)","∜(−16)","(−4)^½","√(−0.25)"], hint:"Even roots of negatives."}]}
 ];
 const NORMAL = [
- {title:"Value Hunt", topic:"Algebra + Trig", groups:[
-  {name:"Equal to 0", items:["sin π","ln 1","tan 180°","0⁵"], hint:"Some of these look like their neighbors in another group. Evaluate carefully."},
-  {name:"Equal to 1", items:["0!","i⁴","sec 0","log₄ 4"], hint:"Remember what 0! is defined as."},
-  {name:"Equal to 2", items:["log₃ 9","∛8","csc 30°","1! + 0!"], hint:"csc is 1 ÷ sin."},
-  {name:"Equal to −1", items:["i²","cos π","e^(iπ)","log₂ ½"], hint:"Euler's identity is one of these."}]},
+ {title:"Number Types", topic:"Algebra", groups:[
+  {name:"Irrational", items:["π","√2","e","φ"], hint:"Decimals that never end or repeat."},
+  {name:"Integers in disguise", items:["√49","−√9","∛−27","12/4"], hint:"Simplify. Some of these look messy but come out whole."},
+  {name:"Rational, but not whole", items:["0.25","⅔","0.3̄","−7/4"], hint:"A repeating decimal is still a fraction."},
+  {name:"Not real numbers", items:["√−4","3i","2 + i","i³"], hint:"Anything with i left over after simplifying."}]},
  {title:"Polynomial Detective", topic:"Algebra", groups:[
   {name:"No real roots", items:["x² + 2x + 5","x⁴ + 1","x² − x + 1","3x² + 1"], hint:"Never crosses the x-axis."},
   {name:"x = −3 is a root", items:["x² + 6x + 9","x³ + 27","x² + 2x − 3","3x + 9"], hint:"Plug in −3. One tile that works is needed in another group."},
@@ -258,11 +258,11 @@ const NORMAL = [
   {name:"Primes", items:["31","61","73","97"], hint:"Two primes on the board belong somewhere else."},
   {name:"Perfect squares (not powers of 2)", items:["49","81","121","169"], hint:"Some of these look prime. Try 11 and 13."},
   {name:"Fibonacci numbers", items:["8","13","34","89"], hint:"Each term is the sum of the two before it."}]},
- {title:"Exponent Rules", topic:"Algebra", groups:[
-  {name:"Equal to x⁶", items:["(x²)³","x² · x⁴","x⁸ ÷ x²","√(x¹²)"], hint:"Power of a power multiplies the exponents."},
-  {name:"Equal to x⁵", items:["x² · x³","x⁷ ÷ x²","(x¹⁰)^½","⁵√(x²⁵)"], hint:"Multiplying adds exponents."},
-  {name:"Equal to x⁸", items:["(x⁴)²","x⁶ · x²","x¹⁶ ÷ x⁸","∛(x²⁴)"], hint:"Dividing subtracts exponents. It doesn't divide them."},
-  {name:"Equal to x⁻²", items:["1 ÷ x²","x³ ÷ x⁵","(x⁻¹)²","(x²)⁻¹"], hint:"A negative exponent means reciprocal."}]},
+ {title:"Power Moves", topic:"Algebra", groups:[
+  {name:"Grows exponentially", items:["2ˣ","eˣ","(1.05)ˣ","3·4ˣ"], hint:"Base bigger than 1."},
+  {name:"Decays exponentially", items:["(½)ˣ","e⁻ˣ","0.9ˣ","5·3⁻ˣ"], hint:"Base between 0 and 1, or a negative exponent."},
+  {name:"True exponent laws", items:["aᵐ·aⁿ = aᵐ⁺ⁿ","(aᵐ)ⁿ = aᵐⁿ","a⁰ = 1","a⁻ⁿ = 1/aⁿ"], hint:"These are always true (for a ≠ 0)."},
+  {name:"Classic mistakes", items:["(a+b)² = a²+b²","aᵐ·aⁿ = aᵐⁿ","√(a+b) = √a+√b","−3² = 9"], hint:"Try a = 1, b = 1. Order of operations matters too."}]},
  {title:"Line Up", topic:"Coordinate geometry", groups:[
   {name:"Pass through the origin", items:["y = 7x","3x + 4y = 0","y = −x","x = 0"], hint:"Plug in (0, 0). One that works belongs elsewhere."},
   {name:"Pass through (3, 4)", items:["y = 4","x = 3","x + y = 7","y = 3x − 5"], hint:"Plug in x = 3, y = 4."},
@@ -273,17 +273,17 @@ const NORMAL = [
   {name:"Hidden Greek letters", items:["TAUNT","CHIMNEY","SPHINX","MUSIC"], hint:"π, θ, and friends are hiding inside."},
   {name:"Hidden trig functions", items:["COSTUME","BASIN","SECOND","COTTAGE"], hint:"Look for three-letter trig abbreviations inside."},
   {name:"Anagrams of math words", items:["GLEAN","ALTERING","STANCE","AMEN"], hint:"Rearrange the letters. One also hides a trig function."}]},
- {title:"Count It", topic:"Combinatorics", groups:[
-  {name:"Equal to 6", items:["3!","C(4, 2)","P(3, 2)","C(6, 5)"], hint:"C(n, r) = n! ÷ (r!(n − r)!)."},
-  {name:"Equal to 10", items:["C(5, 2)","C(5, 3)","C(10, 9)","1+2+3+4"], hint:"C(n, r) = C(n, n − r)."},
-  {name:"Equal to 24", items:["4!","P(4, 3)","C(24, 23)","2 · 3 · 4"], hint:"P(n, r) = n! ÷ (n − r)!."},
-  {name:"Equal to 120", items:["5!","P(6, 3)","C(10, 3)","C(16, 2)"], hint:"The biggest numbers on the board."}]}
+ {title:"Number Clubs", topic:"Number theory", groups:[
+  {name:"Powers of 3", items:["9","27","81","243"], hint:"Keep multiplying by 3."},
+  {name:"Factorials", items:["2","24","120","720"], hint:"n! = 1 × 2 × … × n. One factorial on the board belongs elsewhere."},
+  {name:"Perfect numbers", items:["6","28","496","8128"], hint:"Equal to the sum of their factors (not counting themselves)."},
+  {name:"Triangular numbers", items:["10","15","45","66"], hint:"1 + 2 + … + n. Three others on the board are triangular too."}]}
 ];
 const SETS={easy:EASY,normal:NORMAL,hard:HARD};
 const MODES={easy:"Easy",normal:"Normal",hard:"Hard"};
 let PUZZLES;
 
-const KEY="liketerms.v3";
+const KEY="liketerms.v4";
 let store={}; try{store=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){store={}}
 if(!["easy","normal","hard"].includes(store.mode))store.mode=store.hard?"hard":"normal";
 delete store.hard;
