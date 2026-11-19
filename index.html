@@ -423,6 +423,8 @@ function submit(){
     setTimeout(()=>{tiles.forEach(b=>b.classList.remove("shake"));if(s.mistakes>=MAX()){finish(s,"lost");toast("Here are the answers")}busy=false;save();render()},450);
   }
 }
+function skipFinished(){const done=i=>{const x=store.states[store.mode+i];return x&&x.over};if(!done(cur))return;
+  for(let k=1;k<PUZZLES.length;k++){const i=(cur+k)%PUZZLES.length;if(!done(i)){cur=i;return}}}
 function go(d){cur=Math.max(0,Math.min(PUZZLES.length-1,cur+d));save();render()}
 $("shuffle").onclick=()=>{const s=st();s.order=shuffle(s.order);save();render()};
 $("deselect").onclick=()=>{st().selected=[];save();render()};
@@ -450,7 +452,7 @@ async function pullRemote(){if(!user)return;
   if(error){console.warn("Like Terms load:",error.message);toast("Couldn't load saved progress");return}
   const remote=(data&&data.data&&data.data.states)||{};
   for(const k in remote)if(prog(remote[k])>prog(store.states[k]))store.states[k]=remote[k];
-  try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){}
+  skipFinished();try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){}
   render();pushRemote()}
 const nameOf=u=>(u.user_metadata&&u.user_metadata.name)||u.email.split("@")[0];
 function setAcctBtn(){const b=$("acctBtn");b.hidden=!sb;b.textContent=user?nameOf(user):"Log in";b.title=user?"Your account":"Log in or sign up"}
@@ -533,6 +535,7 @@ if(sb){sb.auth.onAuthStateChange((ev,session)=>{const was=user&&user.id;user=ses
     else openAuth(seenAcct()?"login":"signup",true)},0)})}
 setAcctBtn();
 
+skipFinished();
 render();
 </script>
 </body>
