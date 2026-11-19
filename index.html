@@ -99,6 +99,7 @@ header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
 .modes button:focus-visible{outline:3px solid var(--pen);outline-offset:-3px}
 .clock{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--pen);font-weight:500;margin-left:10px}
 .locked{text-align:center;color:var(--muted);background:var(--tile);border:1px dashed var(--tile-edge);border-radius:10px;padding:18px;margin:0}
+body.locked .wrap{filter:blur(6px);pointer-events:none;user-select:none}
 .acct{font-weight:600;max-width:12em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .modal{position:fixed;inset:0;z-index:30;background:rgba(10,20,30,.45);display:flex;align-items:flex-start;justify-content:center;
   padding:calc(64px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px));overflow-y:auto}
@@ -432,7 +433,9 @@ $("themeBtn").onclick=()=>{const r=document.documentElement;const dark=r.dataset
 // ---------- accounts (Supabase, Battleship project; table lt_progress) ----------
 const SB_URL="https://knlopoqxxbuzfntbfibd.supabase.co",SB_KEY="sb_publishable_midfitAX8ULaJ2afBTCbqQ_JwX9RVCT";
 let sb=null;try{if(window.supabase)sb=window.supabase.createClient(SB_URL,SB_KEY)}catch(e){sb=null}
-let user=null,syncT=null,authMode="login";
+let user=null,syncT=null,authMode="login",locked=false;
+const seenAcct=()=>{try{return localStorage.getItem("liketerms.hasAccount")==="1"}catch(e){return false}};
+const markAcct=()=>{try{localStorage.setItem("liketerms.hasAccount","1")}catch(e){}};
 function queueSync(){if(!user||!sb)return;clearTimeout(syncT);syncT=setTimeout(pushRemote,700)}
 async function pushRemote(){if(!user)return;
   const {error}=await sb.from("lt_progress").upsert({user_id:user.id,data:{states:store.states},updated_at:new Date().toISOString()});
@@ -452,14 +455,14 @@ function setAuthMode(m){authMode=m;const signup=m==="signup",acct=m==="account";
   $("authTitle").textContent=acct?"Your account":signup?"Create an account":"Log in";
   $("nameRow").hidden=!signup;$("authGo").textContent=signup?"Create account":"Log in";
   $("authPass").autocomplete=signup?"new-password":"current-password";
-  $("authNote").textContent=signup?"Free. Your progress saves to your account so you can play on any device.":"Log in to save your progress and pick it up on any device.";
+  $("authNote").textContent=locked?(signup?"Create a free account to play. Your progress saves so you can play on any device.":"Log in to play. Your progress is saved to your account."):signup?"Free. Your progress saves to your account so you can play on any device.":"Log in to save your progress and pick it up on any device.";
   $("authSwitch").innerHTML=signup?'Already have an account? <button type="button" class="link" id="swap">Log in</button>':'New here? <button type="button" class="link" id="swap">Create an account</button>';
   if(!acct)$("swap").onclick=()=>setAuthMode(signup?"login":"signup");
   $("authErr").textContent="";
   if(acct){$("acctWho").textContent="Logged in as "+nameOf(user)+" ("+user.email+")";
     $("acctStats").innerHTML=["easy","normal","hard"].map(m=>{const n=SETS[m].filter((_,i)=>store.states[m+i]&&store.states[m+i].over==="won").length;return '<div><dt>'+MODES[m]+'</dt><dd>'+n+' / '+SETS[m].length+'</dd></div>'}).join("")}}
-function openAuth(m){setAuthMode(m);$("authModal").hidden=false;setTimeout(()=>{const f=m==="account"?$("logoutBtn"):m==="signup"?$("authName"):$("authEmail");f&&f.focus()},30)}
-function closeAuth(){$("authModal").hidden=true}
+function openAuth(m,lock){locked=!!lock;document.body.classList.toggle("locked",locked);$("authClose").hidden=locked;setAuthMode(m);$("authModal").hidden=false;setTimeout(()=>{const f=m==="account"?$("logoutBtn"):m==="signup"?$("authName"):$("authEmail");f&&f.focus()},30)}
+function closeAuth(){if(locked&&!user)return;locked=false;document.body.classList.remove("locked");$("authClose").hidden=false;$("authModal").hidden=true}
 $("acctBtn").onclick=()=>openAuth(user?"account":"login");
 $("authClose").onclick=closeAuth;
 $("authModal").addEventListener("click",e=>{if(e.target===$("authModal"))closeAuth()});
@@ -477,12 +480,13 @@ $("authForm").addEventListener("submit",async e=>{e.preventDefault();if(!sb)retu
       :await sb.auth.signInWithPassword({email,password});
     if(r.error){err.textContent=/invalid login/i.test(r.error.message)?"That email and password don't match an account.":/already registered/i.test(r.error.message)?"That email already has an account. Log in instead.":r.error.message;return}
     if(authMode==="signup"&&!r.data.session){err.textContent="Check your email to confirm your account, then log in.";return}
-    $("authPass").value="";closeAuth();toast(authMode==="signup"?"Account created":"Logged in");
+    $("authPass").value="";markAcct();locked=false;closeAuth();toast(authMode==="signup"?"Account created":"Logged in");
   }catch(x){err.textContent="Couldn't reach the login server. Check your connection and try again."}
   finally{go.disabled=false;go.textContent=authMode==="signup"?"Create account":"Log in"}});
 $("logoutBtn").onclick=async()=>{await sb.auth.signOut();closeAuth();toast("Logged out")};
 if(sb){sb.auth.onAuthStateChange((ev,session)=>{const was=user&&user.id;user=session?session.user:null;setAcctBtn();
-  if(user&&user.id!==was)setTimeout(pullRemote,0)})}
+  if(user){markAcct();if(locked){locked=false;closeAuth()}if(user.id!==was)setTimeout(pullRemote,0)}
+  else if(ev==="INITIAL_SESSION"||ev==="SIGNED_OUT")setTimeout(()=>openAuth(seenAcct()?"login":"signup",true),0)})}
 setAcctBtn();
 
 render();
