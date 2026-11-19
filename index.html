@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Like Terms: a group-of-four puzzle game with geometry and algebra.">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Like Terms</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&family=STIX+Two+Text:wght@500;600&display=swap">
+<style>
+/* Layout: a single graph-paper worksheet column with a red margin line; 4x4 index-card tiles; solved groups slide in as colored bands. */
+:root{
+  --paper:#F3F6F7; --grid:rgba(60,130,185,.16); --ink:#17283A; --muted:#5A6B7B;
+  --tile:#FFFFFF; --tile-edge:#C7D2DC; --sel:#17283A; --sel-ink:#FFFFFF; --pen:#D0413A;
+  --t1:#8FD3B6; --t2:#F2C862; --t3:#F3A28A; --t4:#AEB8F6; --band-ink:#132130;
+  --display:"Bricolage Grotesque", "Arial Black", system-ui, sans-serif;
+  --body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Consolas, monospace;
+  --math:"STIX Two Text", "Cambria Math", "Times New Roman", serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#1C2925; --grid:rgba(235,245,240,.055); --ink:#ECF1EC; --muted:#9BB0A6;
+  --tile:#283832; --tile-edge:#3D5049; --sel:#ECF1EC; --sel-ink:#1C2925; --pen:#F2857A;
+  --t1:#7FC6A8; --t2:#E6BC5A; --t3:#E9957E; --t4:#A1ACEC; --band-ink:#132130; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#1C2925; --grid:rgba(235,245,240,.055); --ink:#ECF1EC; --muted:#9BB0A6;
+  --tile:#283832; --tile-edge:#3D5049; --sel:#ECF1EC; --sel-ink:#1C2925; --pen:#F2857A;
+  --t1:#7FC6A8; --t2:#E6BC5A; --t3:#E9957E; --t4:#A1ACEC; --band-ink:#132130; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:22px 22px;min-height:100vh}
+.wrap{max-width:640px;margin:0 auto;padding-block:20px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  position:relative;display:flex;flex-direction:column;gap:18px}
+.wrap::before{content:"";position:absolute;top:0;bottom:0;left:max(4px,env(safe-area-inset-left,0px));width:2px;background:var(--pen);opacity:.35}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.mark{font-family:var(--display);font-weight:800;font-size:2rem;letter-spacing:-.02em;margin:0;line-height:1}
+.mark sup{font-size:.5em;color:var(--pen);margin-left:1px}
+.tag{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.nav{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;gap:8px;text-align:center}
+.nav h2{margin:0;font-family:var(--display);font-weight:700;font-size:1.3rem;text-wrap:balance}
+.nav .sub{font-family:var(--mono);font-size:.75rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
+.arrow{width:40px;height:40px;border-radius:50%;border:1px solid var(--tile-edge);background:var(--tile);color:var(--ink);font-size:1.1rem;cursor:pointer}
+.arrow:disabled{opacity:.3;cursor:default}
+.tabs{display:flex;justify-content:center;gap:22px}
+.tabs button{background:none;border:0;color:var(--muted);font:500 .9rem var(--body);padding:4px 2px;cursor:pointer;border-bottom:2px solid transparent}
+.tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--ink)}
+.prompt{text-align:center;color:var(--muted);margin:0}
+.board{display:flex;flex-direction:column;gap:8px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.tile{min-height:76px;border-radius:8px;border:1px solid var(--tile-edge);background:var(--tile);color:var(--ink);
+  font-family:var(--math);font-weight:600;padding:6px 4px;cursor:pointer;line-height:1.15;
+  display:flex;align-items:center;justify-content:center;text-align:center;overflow-wrap:anywhere;
+  box-shadow:0 1px 0 var(--tile-edge);transition:background .12s,color .12s,transform .12s;user-select:none}
+.tile.l{font-size:1.35rem}.tile.m{font-size:1.1rem}.tile.s{font-size:.92rem}.tile.xs{font-size:.8rem}
+.tile:hover{transform:translateY(-1px)}
+.tile[aria-pressed="true"]{background:var(--sel);color:var(--sel-ink);border-color:var(--sel)}
+.tile:focus-visible,.btn:focus-visible,.arrow:focus-visible,.tabs button:focus-visible{outline:3px solid var(--pen);outline-offset:2px}
+.band{border-radius:8px;min-height:76px;padding:10px 12px;text-align:center;color:var(--band-ink);
+  display:flex;flex-direction:column;justify-content:center;gap:3px;animation:pop .35s ease-out}
+.band b{font-family:var(--body);font-weight:600;font-size:.95rem;letter-spacing:.06em;text-transform:uppercase}
+.band span{font-family:var(--math);font-size:1.05rem}
+.lv0{background:var(--t1)}.lv1{background:var(--t2)}.lv2{background:var(--t3)}.lv3{background:var(--t4)}
+.mistakes{display:flex;justify-content:center;align-items:center;gap:8px;color:var(--muted);font-size:.9rem}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--ink);transition:opacity .2s, transform .2s}
+.dot.used{opacity:.15;transform:scale(.7)}
+.controls{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.btn{border-radius:999px;border:1px solid var(--ink);background:transparent;color:var(--ink);font:600 .92rem var(--body);padding:10px 18px;cursor:pointer}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn:disabled{opacity:.35;cursor:default}
+.jump{animation:jump .4s ease-in-out}
+.shake{animation:shake .4s}
+@keyframes jump{40%{transform:translateY(-10px)}}
+@keyframes shake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+@keyframes pop{from{transform:scale(.97);opacity:.6}}
+.result{border:1px dashed var(--tile-edge);background:var(--tile);border-radius:10px;padding:16px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
+.result h3{margin:0;font-family:var(--display);font-size:1.3rem}
+.share{font-size:1.3rem;line-height:1.15;letter-spacing:2px;white-space:pre;margin:0}
+.toast{position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);
+  padding:9px 16px;border-radius:8px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+.toast.on{opacity:1}
+.hints{display:flex;flex-direction:column;gap:10px}
+.hint{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;background:var(--tile);border:1px solid var(--tile-edge);border-radius:10px;padding:12px}
+.chip{width:14px;height:14px;border-radius:4px}
+.hint .lab{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.hint p{margin:2px 0 0;min-width:0}
+.legend{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;font-size:.78rem;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.theme{background:none;border:1px solid var(--tile-edge);color:var(--ink);border-radius:999px;padding:5px 10px;font:500 .8rem var(--body);cursor:pointer}
+.hdr-btns{display:flex;gap:8px;flex-wrap:wrap}
+.hardbtn[aria-pressed="true"]{background:var(--pen);border-color:var(--pen);color:var(--paper);font-weight:600}
+.clock{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--pen);font-weight:500;margin-left:10px}
+.locked{text-align:center;color:var(--muted);background:var(--tile);border:1px dashed var(--tile-edge);border-radius:10px;padding:18px;margin:0}
+@media (max-width:440px){.tile{min-height:68px}.tile.l{font-size:1.15rem}.tile.m{font-size:.95rem}.tile.s{font-size:.8rem}.tile.xs{font-size:.7rem}.band span{font-size:.92rem}.band b{font-size:.82rem}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <p class="mark">Like Terms<sup>4</sup></p>
+      <div class="tag">Group sixteen tiles into four sets of four</div>
+    </div>
+    <div class="hdr-btns">
+      <button class="theme hardbtn" id="hardBtn" type="button" aria-pressed="false">Hard mode: off</button>
+      <button class="theme" id="themeBtn" type="button">Light / dark</button>
+    </div>
+  </header>
+
+  <div class="nav">
+    <button class="arrow" id="prev" type="button" aria-label="Previous problem set">‹</button>
+    <div><h2 id="ptitle"></h2><div class="sub" id="psub"></div></div>
+    <button class="arrow" id="next" type="button" aria-label="Next problem set">›</button>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button id="tabGame" role="tab" aria-selected="true" type="button">Game</button>
+    <button id="tabHints" role="tab" aria-selected="false" type="button">Hints</button>
+  </div>
+
+  <section id="gameView" class="board">
+    <p class="prompt" id="prompt">Find groups of four that share something.</p>
+    <div id="bands" class="board"></div>
+    <div id="grid" class="grid"></div>
+    <div class="mistakes" id="mistakes"></div>
+    <div class="controls" id="controls">
+      <button class="btn" id="shuffle" type="button">Shuffle</button>
+      <button class="btn" id="deselect" type="button">Deselect all</button>
+      <button class="btn primary" id="submit" type="button">Submit</button>
+    </div>
+    <div id="result" class="result" hidden></div>
+  </section>
+
+  <section id="hintView" class="hints" hidden></section>
+
+  <div class="legend">
+    <span><i class="chip lv0"></i>Level 1</span><span><i class="chip lv1"></i>Level 2</span>
+    <span><i class="chip lv2"></i>Level 3</span><span><i class="chip lv3"></i>Level 4 (trickiest)</span>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+// groups listed easiest (Level 1) to hardest (Level 4)
+const PUZZLES = [
+ {title:"Value Hunt", topic:"Algebra + Trig", groups:[
+  {name:"Equal to 0", items:["sin π","ln 1","tan 180°","0⁵"], hint:"Some of these look like their neighbors in another group. Evaluate carefully."},
+  {name:"Equal to 1", items:["0!","i⁴","sec 0","log₄ 4"], hint:"Remember what 0! is defined as."},
+  {name:"Equal to 2", items:["log₃ 9","∛8","csc 30°","1! + 0!"], hint:"csc is 1 ÷ sin."},
+  {name:"Equal to −1", items:["i²","cos π","e^(iπ)","log₂ ½"], hint:"Euler's identity is one of these."}]},
+ {title:"Polynomial Detective", topic:"Algebra", groups:[
+  {name:"No real roots", items:["x² + 2x + 5","x⁴ + 1","x² − x + 1","3x² + 1"], hint:"Never crosses the x-axis."},
+  {name:"x = −3 is a root", items:["x² + 6x + 9","x³ + 27","x² + 2x − 3","3x + 9"], hint:"Plug in −3. One tile that works is needed in another group."},
+  {name:"x = 2 is a root", items:["x³ − 8","x² − 4x + 4","2x² − 3x − 2","x² + x − 6"], hint:"Plug in 2. Count how many tiles pass."},
+  {name:"Roots add up to 5", items:["x² − 5x + 4","x² − 5x − 14","2x² − 10x + 1","x² − 5x"], hint:"Vieta: the sum of the roots is −b/a."}]},
+ {title:"Triangle Trouble", topic:"Geometry", groups:[
+  {name:"Right triangles", items:["5, 12, 13","8, 15, 17","7, 24, 25","20, 21, 29"], hint:"a² + b² = c²."},
+  {name:"Can't exist", items:["2, 3, 6","1, 1, 2","4, 5, 10","3, 7, 11"], hint:"Triangle inequality: the two short sides must add to more than the long side."},
+  {name:"Obtuse", items:["4, 5, 7","2, 3, 4","6, 8, 11","5, 5, 8"], hint:"a² + b² is less than c²."},
+  {name:"Acute", items:["6, 7, 8","5, 5, 6","9, 10, 11","4, 4, 4"], hint:"a² + b² is more than c²."}]},
+ {title:"Number Pile", topic:"Number theory", groups:[
+  {name:"Powers of 2", items:["16","32","128","256"], hint:"Two of these are also perfect squares."},
+  {name:"Primes", items:["31","61","73","97"], hint:"Two primes on the board belong somewhere else."},
+  {name:"Perfect squares (not powers of 2)", items:["49","81","121","169"], hint:"Some of these look prime. Try 11 and 13."},
+  {name:"Fibonacci numbers", items:["8","13","34","89"], hint:"Each term is the sum of the two before it."}]},
+ {title:"Exponent Rules", topic:"Algebra", groups:[
+  {name:"Equal to x⁶", items:["(x²)³","x² · x⁴","x⁸ ÷ x²","√(x¹²)"], hint:"Power of a power multiplies the exponents."},
+  {name:"Equal to x⁵", items:["x² · x³","x⁷ ÷ x²","(x¹⁰)^½","⁵√(x²⁵)"], hint:"Multiplying adds exponents."},
+  {name:"Equal to x⁸", items:["(x⁴)²","x⁶ · x²","x¹⁶ ÷ x⁸","∛(x²⁴)"], hint:"Dividing subtracts exponents. It doesn't divide them."},
+  {name:"Equal to x⁻²", items:["1 ÷ x²","x³ ÷ x⁵","(x⁻¹)²","(x²)⁻¹"], hint:"A negative exponent means reciprocal."}]},
+ {title:"Line Up", topic:"Coordinate geometry", groups:[
+  {name:"Pass through the origin", items:["y = 7x","3x + 4y = 0","y = −x","x = 0"], hint:"Plug in (0, 0). One that works belongs elsewhere."},
+  {name:"Pass through (3, 4)", items:["y = 4","x = 3","x + y = 7","y = 3x − 5"], hint:"Plug in x = 3, y = 4."},
+  {name:"Parallel to y = 2x + 1", items:["y = 2x − 7","4x − 2y = 3","y − 5 = 2(x + 1)","6x − 3y = 1"], hint:"Same slope. Solve for y first."},
+  {name:"Perpendicular to y = 2x + 1", items:["y = −½x","x + 2y = 8","2y = −x + 3","y + 1 = −½(x − 4)"], hint:"Negative reciprocal slope."}]},
+ {title:"Word Geometry", topic:"Wordplay", groups:[
+  {name:"Add “-gon” to make a polygon", items:["OCTA","DECA","POLY","HEPTA"], hint:"Finish the word."},
+  {name:"Hidden Greek letters", items:["TAUNT","CHIMNEY","SPHINX","MUSIC"], hint:"π, θ, and friends are hiding inside."},
+  {name:"Hidden trig functions", items:["COSTUME","BASIN","SECOND","COTTAGE"], hint:"Look for three-letter trig abbreviations inside."},
+  {name:"Anagrams of math words", items:["GLEAN","ALTERING","STANCE","AMEN"], hint:"Rearrange the letters. One also hides a trig function."}]},
+ {title:"Count It", topic:"Combinatorics", groups:[
+  {name:"Equal to 6", items:["3!","C(4, 2)","P(3, 2)","C(6, 5)"], hint:"C(n, r) = n! ÷ (r!(n − r)!)."},
+  {name:"Equal to 10", items:["C(5, 2)","C(5, 3)","C(10, 9)","1+2+3+4"], hint:"C(n, r) = C(n, n − r)."},
+  {name:"Equal to 24", items:["4!","P(4, 3)","C(24, 23)","2 · 3 · 4"], hint:"P(n, r) = n! ÷ (n − r)!."},
+  {name:"Equal to 120", items:["5!","P(6, 3)","C(10, 3)","C(16, 2)"], hint:"The biggest numbers on the board."}]}
+];
+
+const KEY="liketerms.v2";
+let store={}; try{store=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){store={}}
+let cur = Number.isInteger(store.cur)&&store.cur<PUZZLES.length ? store.cur : 0;
+store.states=store.states||{};
+let busy=false;
+const $=id=>document.getElementById(id);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function fresh(p){return {order:shuffle(PUZZLES[p].groups.flatMap(g=>g.items)),solved:[],mistakes:0,history:[],guessed:[],selected:[],over:null,hints:[],start:null,time:null}}
+const skey=()=>(store.hard?"h":"n")+cur;
+function st(){const k=skey();return store.states[k]||(store.states[k]=fresh(cur))}
+const MAX=()=>store.hard?2:4;
+const fmt=ms=>{const t=Math.floor(ms/1000);return Math.floor(t/60)+":"+String(t%60).padStart(2,"0")};
+function finish(s,how){s.over=how;s.selected=[];if(s.start)s.time=Date.now()-s.start}
+function tick(){const c=$("clock");if(!c)return;const s=st();c.textContent=fmt(s.time??(s.start?Date.now()-s.start:0))}
+setInterval(tick,1000);
+function save(){store.cur=cur;try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){}}
+const levelOf=item=>PUZZLES[cur].groups.findIndex(g=>g.items.includes(item));
+function sizeClass(t){const n=[...t].length;return n<=6?"l":n<=10?"m":n<=14?"s":"xs"}
+function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("on");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("on"),1600)}
+function band(g){const G=PUZZLES[cur].groups[g];const d=document.createElement("div");d.className="band lv"+g;
+  d.innerHTML=`<b></b><span></span>`;d.querySelector("b").textContent=G.name;d.querySelector("span").textContent=G.items.join(", ");return d}
+
+function render(){
+  const s=st(),P=PUZZLES[cur];
+  $("ptitle").textContent=P.title;
+  $("psub").textContent=`Problem set ${cur+1} of ${PUZZLES.length} · ${P.topic}`;
+  $("prev").disabled=cur===0;$("next").disabled=cur===PUZZLES.length-1;
+  const bands=$("bands");bands.innerHTML="";
+  const shown=s.over==="lost"?[...s.solved,...[0,1,2,3].filter(g=>!s.solved.includes(g))]:s.solved;
+  shown.forEach(g=>bands.appendChild(band(g)));
+  const grid=$("grid");grid.innerHTML="";
+  if(!s.over){s.order.filter(t=>!s.solved.includes(levelOf(t))).forEach(t=>{
+    const b=document.createElement("button");b.type="button";b.className="tile "+sizeClass(t);b.textContent=t;b.dataset.t=t;
+    b.setAttribute("aria-pressed",s.selected.includes(t));b.onclick=()=>toggle(t);grid.appendChild(b)})}
+  grid.hidden=!!s.over;$("controls").hidden=!!s.over;$("prompt").hidden=!!s.over;
+  $("prompt").textContent=store.hard?"Hard mode: 2 mistakes, no “one away” warnings, no hints, and the clock starts on your first tap.":"Find groups of four that share something.";
+  const hb=$("hardBtn");hb.setAttribute("aria-pressed",!!store.hard);hb.textContent="Hard mode: "+(store.hard?"on":"off");
+  const m=$("mistakes");m.innerHTML=s.over?"":"Mistakes remaining: "+Array.from({length:MAX()},(_,i)=>`<i class="dot${i<s.mistakes?" used":""}"></i>`).join("")+(store.hard?`<span class="clock" id="clock"></span>`:"");
+  tick();
+  $("submit").disabled=s.selected.length!==4;$("deselect").disabled=!s.selected.length;
+  const r=$("result");r.hidden=!s.over;
+  if(s.over){
+    const emo=["🟩","🟨","🟧","🟦"];
+    const grid=s.history.map(row=>row.map(l=>emo[l]).join("")).join("\n");
+    let head=s.over==="won"?(s.mistakes===0?"Perfect solve":`Solved with ${s.mistakes} mistake${s.mistakes>1?"s":""}`):"Out of mistakes";
+    if(store.hard)head+=` · Hard mode${s.time!=null?" · "+fmt(s.time):""}`;
+    r.innerHTML=`<h3></h3><pre class="share"></pre><div class="controls"><button class="btn" id="copy" type="button">Copy results</button><button class="btn" id="replay" type="button">Replay</button>${cur<PUZZLES.length-1?'<button class="btn primary" id="another" type="button">Next set</button>':""}</div>`;
+    r.querySelector("h3").textContent=head;r.querySelector(".share").textContent=grid;
+    const text=`Like Terms · ${P.title}${store.hard?" · Hard mode"+(s.time!=null?" "+fmt(s.time):""):""}\n${grid}`;
+    $("copy").onclick=()=>{navigator.clipboard.writeText(text).then(()=>toast("Copied"),()=>{const sel=getSelection(),rg=document.createRange();rg.selectNodeContents(r.querySelector(".share"));sel.removeAllRanges();sel.addRange(rg);toast("Press Ctrl+C to copy")})};
+    $("replay").onclick=()=>{store.states[skey()]=fresh(cur);save();render()};
+    if($("another"))$("another").onclick=()=>go(1);
+  }
+  renderHints();
+}
+function renderHints(){
+  const s=st(),v=$("hintView");v.innerHTML="";
+  if(store.hard&&!s.over){v.innerHTML=`<p class="locked">Hints are off in hard mode. Finish the set or turn hard mode off to see them.</p>`;return}
+  PUZZLES[cur].groups.forEach((g,i)=>{
+    const done=s.solved.includes(i)||s.over,open=s.hints.includes(i)||done;
+    const d=document.createElement("div");d.className="hint";
+    d.innerHTML=`<i class="chip lv${i}"></i><div style="min-width:0"><div class="lab">Level ${i+1}${done?" · "+g.name:""}</div><p></p></div>`;
+    d.querySelector("p").textContent=open?g.hint:"Hidden until you ask.";
+    if(!open){const b=document.createElement("button");b.className="btn";b.type="button";b.textContent="Show hint";b.onclick=()=>{s.hints.push(i);save();renderHints()};d.appendChild(b)}
+    else d.appendChild(document.createElement("span"));
+    v.appendChild(d)});
+}
+function toggle(t){const s=st();if(busy||s.over)return;
+  if(!s.start){s.start=Date.now();tick()}
+  const i=s.selected.indexOf(t);if(i>=0)s.selected.splice(i,1);else if(s.selected.length<4)s.selected.push(t);else return;
+  save();document.querySelectorAll(".tile").forEach(b=>b.setAttribute("aria-pressed",s.selected.includes(b.dataset.t)));
+  $("submit").disabled=s.selected.length!==4;$("deselect").disabled=!s.selected.length}
+function submit(){
+  const s=st();if(busy||s.selected.length!==4)return;
+  const key=s.selected.slice().sort().join("|");
+  if(s.guessed.includes(key)){toast("Already guessed");return}
+  s.guessed.push(key);const lv=s.selected.map(levelOf);s.history.push(lv);
+  const tiles=[...document.querySelectorAll(".tile")].filter(b=>s.selected.includes(b.dataset.t));
+  busy=true;
+  if(lv.every(l=>l===lv[0])){
+    tiles.forEach((b,i)=>{b.style.animationDelay=i*70+"ms";b.classList.add("jump")});
+    setTimeout(()=>{s.solved.push(lv[0]);s.selected=[];if(s.solved.length===4)finish(s,"won");busy=false;save();render();if(s.over)toast("Nicely done")},650);
+  }else{
+    const counts=[0,1,2,3].map(g=>lv.filter(l=>l===g).length);
+    if(!store.hard&&Math.max(...counts)===3)toast("One away…");
+    tiles.forEach(b=>b.classList.add("shake"));
+    s.mistakes++;
+    setTimeout(()=>{tiles.forEach(b=>b.classList.remove("shake"));if(s.mistakes>=MAX()){finish(s,"lost");toast("Here are the answers")}busy=false;save();render()},450);
+  }
+}
+function go(d){cur=Math.max(0,Math.min(PUZZLES.length-1,cur+d));save();render()}
+$("shuffle").onclick=()=>{const s=st();s.order=shuffle(s.order);save();render()};
+$("deselect").onclick=()=>{st().selected=[];save();render()};
+$("submit").onclick=submit;
+$("hardBtn").onclick=()=>{if(busy)return;store.hard=!store.hard;save();render();toast(store.hard?"Hard mode on":"Hard mode off")};
+$("prev").onclick=()=>go(-1);$("next").onclick=()=>go(1);
+function tab(h){$("tabGame").setAttribute("aria-selected",!h);$("tabHints").setAttribute("aria-selected",h);$("gameView").hidden=h;$("hintView").hidden=!h}
+$("tabGame").onclick=()=>tab(false);$("tabHints").onclick=()=>tab(true);
+$("themeBtn").onclick=()=>{const r=document.documentElement;const dark=r.dataset.theme?r.dataset.theme==="dark":matchMedia("(prefers-color-scheme: dark)").matches;r.dataset.theme=dark?"light":"dark"};
+render();
+</script>
+</body>
+</html>
